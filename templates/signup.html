@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/i18next-1.7.7.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/CryptoJS/rollups/md5.js" type="text/javascript" charset="utf-8"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<style>
+			
+			html,body{
+				width: 100%;
+				height: 100%;
+			}
+			
+			.mui-content{
+				width: 100%;
+				height: 100%;
+			}
+			.mui-content-padded{
+				margin-top: 30px;
+			}
+			img{
+				width: 80%;
+				margin-top: 70px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 id="title" class="mui-title"></h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-text-center">
+				<img src="../images/LinChat_Login.png" alt="LinChat登录" />
+			</div>
+			<div class="mui-content-padded">
+				<form class="mui-input-group">
+					<div class="mui-input-row">
+						<label id="user-label"></label>
+						<input id="user-input" type="text" class="mui-input-clear">
+					</div>
+					<div class="mui-input-row">
+						<label id="password-label"></label>
+						<input id="password-input" type="password" class="mui-input-clear">
+					</div>
+					<div class="mui-button-row">
+						<button id="signup" class="mui-btn mui-btn-primary mui-btn-outlined" onclick="return false;"></button>&nbsp;&nbsp;
+						<button id="cancel" class="mui-btn mui-btn-negative mui-btn-outlined mui-action-back" onclick="return false;"></button>
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			i18n.init({
+//				lng: 'en-US',
+				resGetPath: '../locales/__lng__/__ns__.json',
+		        debug: false
+			}, function(t) {
+	        	document.getElementById('title').innerText = t('app.name');
+	        	document.getElementById('user-label').innerText = t('login.user-label');
+	        	document.getElementById('user-input').setAttribute('placeholder', t('login.user-input'));
+	        	document.getElementById('password-label').innerText = t('login.password-label');
+	        	document.getElementById('password-input').setAttribute('placeholder', t('login.password-input'));
+	        	document.getElementById('cancel').innerText = t('signup.cancel');
+	        	document.getElementById('signup').innerText = t('signup.label');
+	    	});
+	    	
+	    	var websocket = new WebSocket(wsServer); 
+			websocket.onopen = function (evt) { onOpen(evt) }; 
+			websocket.onclose = function (evt) { onClose(evt) }; 
+			websocket.onmessage = function (evt) { onMessage(evt) }; 
+			websocket.onerror = function (evt) { onError(evt) }; 
+			function onOpen(evt) { 
+			 	console.log("Connected to WebSocket server."); 
+			} 
+			function onClose(evt) { 
+				console.log("Disconnected to WebSocket server."); 
+			} 
+			function onMessage(evt) { 
+			 	console.log('Retrieved data from server: ' + evt.data); 
+			 	var result = JSON.parse(evt.data);
+			 	if(result.Status){
+			 		mui.toast(i18n.t('signup.success'));
+					setTimeout(function() {
+						mui.back();
+					}, 3000);
+			 	}else{
+			 		mui.toast(i18n.t('signup.failure'));
+			 	}
+			}
+			function onError(evt) { 
+			 	console.log('Error occured: ' + evt.data); 
+			}
+				    	
+	    	var userInput = document.getElementById('user-input');
+			var passwordInput = document.getElementById('password-input');
+			var signupButton = document.getElementById('signup');
+			signupButton.addEventListener('tap', function() {
+				var username = userInput.value;
+				var password = '' + CryptoJS.MD5(passwordInput.value);
+				var json = JSON.stringify({
+			      Username: username,
+			      Password: password,
+			    });
+				websocket.send("SIGNUP "+json);
+			});
+		</script>
+	</body>
+
+</html>

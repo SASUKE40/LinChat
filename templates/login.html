@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/i18next-1.7.7.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../js/CryptoJS/rollups/md5.js" type="text/javascript" charset="utf-8"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<style>
+			
+			html,body{
+				width: 100%;
+				height: 100%;
+			}
+			
+			.mui-content{
+				width: 100%;
+				height: 100%;
+			}
+			.mui-content-padded{
+				margin-top: 30px;
+			}
+			.mui-bar.mui-bar-footer{
+				background-color: transparent;
+				box-shadow: none;
+				-webkit-box-shadow: none;
+			}
+			img{
+				width: 80%;
+				margin-top: 70px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 id="title" class="mui-title"></h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-text-center">
+				<img src="../images/LinChat_Login.png" alt="LinChat登录" />
+			</div>
+			<div class="mui-content-padded">
+				<form class="mui-input-group">
+					<div class="mui-input-row">
+						<label id="user-label"></label>
+						<input id="user-input" type="text" class="mui-input-clear">
+					</div>
+					<div class="mui-input-row">
+						<label id="password-label"></label>
+						<input id="password-input" type="password" class="mui-input-clear">
+					</div>
+					<div class="mui-button-row">
+						<button id="login" class="mui-btn mui-btn-primary mui-btn-outlined" onclick="return false;"></button>&nbsp;&nbsp;
+						<button id="signup" class="mui-btn mui-btn-positive mui-btn-outlined" onclick="return false;"></button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<footer class="mui-bar mui-bar-footer">
+			<p class="mui-text-right">SASUKE © 2015 <a id="info" href="#"></a></p>
+		</footer>
+		
+		
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			i18n.init({
+//				lng: 'zh-CN',
+				resGetPath: '../locales/__lng__/__ns__.json',
+		        debug: false
+			}, function(t) {
+	        	document.getElementById('title').innerText = t('app.name');
+	        	document.getElementById('user-label').innerText = t('login.user-label');
+	        	document.getElementById('user-input').setAttribute('placeholder', t('login.user-input'));
+	        	document.getElementById('password-label').innerText = t('login.password-label');
+	        	document.getElementById('password-input').setAttribute('placeholder', t('login.password-input'));
+	        	document.getElementById('info').innerText = t('info.label');
+	        	document.getElementById('login').innerText = t('login.label');
+	        	document.getElementById('signup').innerText = t('signup.label');
+	    	});
+	    	
+	    	var websocket = new WebSocket(wsServer); 
+			var userInput = document.getElementById('user-input');
+			var passwordInput = document.getElementById('password-input');
+			var loginButton = document.getElementById('login');
+			
+			websocket.onopen = function (evt) { onOpen(evt) }; 
+			websocket.onclose = function (evt) { onClose(evt) }; 
+			websocket.onmessage = function (evt) { onMessage(evt) }; 
+			websocket.onerror = function (evt) { onError(evt) }; 
+			function onOpen(evt) { 
+			 	console.log("Connected to WebSocket server."); 
+			} 
+			function onClose(evt) { 
+				console.log("Disconnected to WebSocket server."); 
+			} 
+			function onMessage(evt) { 
+//			 	console.log('Retrieved data from server: ' + evt.data); 
+			 	var result = JSON.parse(evt.data);
+			 	plus.storage.setItem("sender", userInput.value);
+			 	if(result.Status){
+			 		mui.toast(i18n.t('login.success'));
+					setTimeout(function() {
+						mui.openWindow({
+						    url: '../index.html', 
+						    id:'index',
+						    show:{
+						      aniShow: 'slide-in-right'
+						    }
+						});
+					}, 1000);
+			 	}else{
+			 		mui.toast(i18n.t('login.failure')+result.Detail);
+			 	}
+			} 
+			function onError(evt) { 
+			 	console.log('Error occured: ' + evt.data); 
+			}
+	    	
+			document.getElementById('signup').addEventListener('tap', function() {
+				mui.openWindow({
+				    url: 'signup.html', 
+				    id: 'signup',
+				    show:{
+				      aniShow: 'slide-in-bottom'
+				    }
+				});
+			});
+			
+			document.getElementById('info').addEventListener('tap', function() {
+				mui.openWindow({
+				    url: 'info.html', 
+				    id:'info',
+				    show:{
+				      aniShow: 'zoom-fade-out',
+				      duration: 300
+				    }
+				});
+			});
+			
+			loginButton.addEventListener('tap', function() {
+				var username = userInput.value;
+				var password = '' + CryptoJS.MD5(passwordInput.value);
+				var json = JSON.stringify({
+			      Username: username,
+			      Password: password,
+			    });
+				websocket.send("LOGIN "+json);
+			});
+			
+			//首页返回键处理
+			 //处理逻辑：1秒内，连续两次按返回键，则退出应用；
+			var first = null;
+			mui.back = function() {
+				//首次按键，提示‘再按一次退出应用’
+				if (!first) {
+					first = new Date().getTime();
+					mui.toast('再按一次退出应用');
+					setTimeout(function() {
+						first = null;
+					}, 1000);
+				} else {
+					if (new Date().getTime() - first < 1000) {
+						plus.runtime.quit();
+					}
+				}
+			};
+		</script>
+	</body>
+
+</html>

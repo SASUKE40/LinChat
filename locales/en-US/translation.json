@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "LinChat"
+  },
+  "nav": {
+    "chats": "Chats",
+    "contacts": "Contacts",
+    "settings": "Settings"
+  },
+  "login": {
+  	"label": "Login",
+  	"user-label": "Username",
+  	"user-input": "Input Username Here",
+  	"password-label": "Password",
+  	"password-input": "Input Password Here",
+  	"success": "Login Successed",
+  	"failure": "Login Failed, Reason: "
+  },
+  "signup": {
+  	"label": "Signup",
+  	"cancel": "Cancel",
+  	"success": "Signup Successed, Back To Login",
+  	"failure": "Signup Failed"
+  },
+  "info": {
+  	"label": "About LinChat"
+  }
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<style>
+			html,
+			body {
+				background-color: #efeff4;
+			}
+			.title {
+				padding: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+				background-color: #fff;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="mui-content">
+			<div class="mui-scroll">
+				<ul id="UserList" class="mui-table-view">
+					<li class="mui-table-view-cell mui-hidden">cared
+						<div id="M_Toggle" class="mui-switch mui-active">
+							<div class="mui-switch-handle"></div>
+						</div>
+					</li>
+
+					<li class="mui-table-view-cell mui-media">
+						<a href="#">
+							<img class="mui-media-object mui-pull-left" src="http://dcloudio.github.io/mui/assets/img/shuijiao.jpg">
+							<div class="mui-media-body">
+								聊天室
+								<p class='mui-ellipsis'>让我们在这里畅所欲言吧……</p>
+							</div>
+						</a>
+					</li>
+					<!--<li class="mui-table-view-cell mui-media">
+						<a href="#">
+							<img class="mui-media-object mui-pull-left" src="http://dcloudio.github.io/mui/assets/img/shuijiao.jpg">
+							<div class="mui-media-body">
+								幸福
+								<p class='mui-ellipsis'>能和心爱的人一起睡觉，是件幸福的事情；可是，打呼噜怎么办？</p>
+							</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media">
+						<a href="#">
+							<img class="mui-media-object mui-pull-left" src="http://dcloudio.github.io/mui/assets/img/muwu.jpg">
+							<div class="mui-media-body">
+								木屋
+								<p class='mui-ellipsis'>想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.</p>
+							</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media">
+						<a href="#">
+							<img class="mui-media-object mui-pull-left" src="http://dcloudio.github.io/mui/assets/img/cbd.jpg">
+							<div class="mui-media-body">
+								CBD
+								<p class='mui-ellipsis'>烤炉模式的城，到黄昏，如同打翻的调色盘一般.</p>
+							</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media">
+						<a href="#">
+							<img class="mui-media-object mui-pull-left" src="http://dcloudio.github.io/mui/assets/img/yuantiao.jpg">
+							<div class="mui-media-body">
+								远眺
+								<p class='mui-ellipsis'>静静的看这个世界，最后终于疯了</p>
+							</div>
+						</a>
+					</li>-->
+				</ul>
+			</div>
+			<script src="../js/mui.min.js"></script>
+			<script src="../js/app.js"></script>
+			<script>
+				mui.init({
+					swipeBack: false
+				});
+				var sender, websocket;
+				mui.plusReady(function() {
+					var self = plus.webview.currentWebview();
+					sender = plus.storage.getItem("sender");
+					websocket = new WebSocket(wsServer);
+					websocket.onopen = function(evt) {
+						var json = JSON.stringify({
+							Sender: sender,
+							Receiver: 'Server'
+						});
+						websocket.send("LIST " + json);
+					};
+					websocket.onclose = function(evt) {
+						console.log("Disconnected to WebSocket server.");
+					};
+					websocket.onmessage = function(evt) {
+						console.log(sender + ' : Retrieved data from server: ' + evt.data);
+						var user_list = document.getElementById('UserList');
+						var user_node = document.createElement('li');
+						user_node.className = 'mui-table-view-cell mui-media';
+						user_node.innerHTML = "<a href='#'><img class='mui-media-object mui-pull-left' src='http://dcloudio.github.io/mui/assets/img/cbd.jpg'><div class='mui-media-body'>"+evt.data+"<p class='mui-ellipsis'>"+evt.data+"</p></div></a>";
+						user_list.appendChild(user_node);
+					};
+					websocket.onerror = function(evt) {
+						console.log('Error occured: ' + evt.data);
+					};
+				});
+				var nodeList = document.querySelectorAll('.mui-media');
+				for (var i = 0; i < nodeList.length; i++) {
+					nodeList[i].addEventListener('tap', function() {
+						mui.openWindow({
+							url: 'chat.html',
+							id: 'chat'
+						});
+					});
+				}
+				/**
+				 * 下拉刷新具体业务实现
+				 */
+				function pulldownRefresh() {
+					setTimeout(function() {
+						var table = document.body.querySelector('.mui-table-view');
+						var cells = document.body.querySelectorAll('.mui-table-view-cell');
+						for (var i = cells.length, len = i + 3; i < len; i++) {
+							var li = document.createElement('li');
+							li.className = 'mui-table-view-cell';
+							li.innerHTML = '<a class="mui-navigate-right">Item ' + (i + 1) + '</a>';
+							//下拉刷新，新纪录插到最前面；
+							table.insertBefore(li, table.firstChild);
+						}
+						mui('#pullrefresh').pullRefresh().endPulldownToRefresh(); //refresh completed
+					}, 1000);
+				}
+				var count = 0;
+				/**
+				 * 上拉加载具体业务实现
+				 */
+				function pullupRefresh() {
+					setTimeout(function() {
+						mui('#pullrefresh').pullRefresh().endPullupToRefresh((++count > 2)); //参数为true代表没有更多数据了。
+						var table = document.body.querySelector('.mui-table-view');
+						var cells = document.body.querySelectorAll('.mui-table-view-cell');
+						for (var i = cells.length, len = i + 20; i < len; i++) {
+							var li = document.createElement('li');
+							li.className = 'mui-table-view-cell';
+							li.innerHTML = '<a class="mui-navigate-right">Item ' + (i + 1) + '</a>';
+							table.appendChild(li);
+						}
+					}, 1000);
+				}
+			</script>
+		</div>
+	</body>
+
+</html>

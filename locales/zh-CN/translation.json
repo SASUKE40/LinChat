@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "LinChat"
+  },
+  "nav": {
+    "chats": "聊天",
+    "contacts": "通讯录",
+    "settings": "设置"
+  },
+  "login": {
+  	"label": "登录",
+  	"user-label": "用户名",
+  	"user-input": "输入你的用户名",
+  	"password-label": "密码",
+  	"password-input": "输入你的密码",
+  	"success": "登录成功",
+  	"failure": "登录失败，原因："
+  },
+  "signup": {
+  	"label": "注册",
+  	"cancel": "取消",
+  	"success": "注册成功，返回登录",
+  	"failure": "注册失败"
+  },
+  "info": {
+  	"label": "关于LinChat"
+  }
+}

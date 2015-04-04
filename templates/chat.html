@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../js/mui.min.js"></script>
+		<script src="../js/app.js"></script>
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+		</script>
+		<style>
+			#chat-input{
+		    		width: 70%;
+		    	}
+		    	#chat-emoji{
+		    		width: 10%;
+		    	}
+		    	#chat-send{
+		    		width: 20%;
+		    	}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 id="title" class="mui-title">聊天室</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view mui-hidden">
+			</ul>
+		</div>
+		<footer class="mui-bar mui-bar-footer">
+			<form class="mui-input-group">
+				<div id="chat-input" class="mui-input-row mui-pull-left">
+					<input id="chat-text" type="text" placeholder="在这里输入聊天内容">
+				</div>
+				<div id="chat-emoji" class="mui-pull-left">
+					&nbsp;
+				</div>
+				<div id="chat-send" class="mui-pull-left">
+					<button class="mui-btn mui-btn-block mui-btn-outlined mui-btn-primary" onclick="return false;" id="chat-button">发送</button>
+				</div>
+			</form>
+		</footer>
+		<script type="text/javascript">
+		
+			var sender;
+				
+			mui.plusReady(function(){
+				var self = plus.webview.currentWebview();
+				sender = plus.storage.getItem("sender");
+			});
+		
+			var addCellRight = function(msg){
+				var table = document.body.querySelector('.mui-table-view');
+				table.className = 'mui-table-view';
+				var li = document.createElement('li');
+				li.className = 'mui-table-view-cell';
+				li.innerHTML = '<span>' + msg + '</span>';
+				//下拉刷新，新纪录插到最前面；
+				table.insertBefore(li);
+			}
+			
+			var websocket = new WebSocket(wsServer); 
+			websocket.onopen = function (evt) { onOpen(evt) }; 
+			websocket.onclose = function (evt) { onClose(evt) }; 
+			websocket.onmessage = function (evt) { onMessage(evt) }; 
+			websocket.onerror = function (evt) { onError(evt) }; 
+			function onOpen(evt) { 
+			 	console.log("Connected to WebSocket server."); 
+			} 
+			function onClose(evt) { 
+				console.log("Disconnected to WebSocket server."); 
+			} 
+			function onMessage(evt) { 
+			 	console.log('Retrieved data from server: ' + evt.data); 
+			 	addCellRight(evt.data);
+			} 
+			function onError(evt) { 
+			 	console.log('Error occured: ' + evt.data); 
+			}
+			
+			var chatText = document.getElementById('chat-text');
+			var chatButton = document.getElementById('chat-button');
+			chatButton.addEventListener('tap', function() {
+				var text = chatText.value;
+				var json = JSON.stringify({
+			      Sender: sender,
+			      Receiver: 'All',
+			      Content: text
+			    });
+				websocket.send("SEND "+json);
+			});
+		</script>
+	</body>
+
+</html>
